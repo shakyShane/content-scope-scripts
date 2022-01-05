@@ -47,6 +47,10 @@ function setWindowDimensions () {
             setWindowPropertyValue('screenTop', normalizedY)
         }
 
+        if (!top) {
+            return
+        }
+
         if (top.window.outerHeight >= origPropertyValues.availHeight - 1) {
             setWindowPropertyValue('outerHeight', top.window.screen.height)
         } else {
@@ -79,7 +83,7 @@ function setWindowDimensions () {
     }
 }
 
-export function init (args) {
+export function init (_args) {
     origPropertyValues.availTop = overrideProperty('availTop', {
         object: Screen.prototype,
         origValue: screen.availTop,

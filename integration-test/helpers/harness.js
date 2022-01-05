@@ -1,9 +1,9 @@
-import * as fs from 'fs'
-import * as os from 'os'
-import * as path from 'path'
-import * as http from 'http'
+import * as fs from 'node:fs'
+import * as os from 'node:os'
+import * as path from 'node:path'
+import * as http from 'node:http'
+import { spawnSync } from 'node:child_process'
 import puppeteer from 'puppeteer'
-import { spawnSync } from 'child_process'
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 20000
 if (process.env.KEEP_OPEN) {
@@ -12,7 +12,7 @@ if (process.env.KEEP_OPEN) {
 
 const DATA_DIR_PREFIX = 'ddg-temp-'
 
-export async function setup (ops = {}) {
+export async function setup () {
     const tmpDirPrefix = path.join(os.tmpdir(), DATA_DIR_PREFIX)
     const dataDir = fs.mkdtempSync(tmpDirPrefix)
     const puppeteerOps = {
@@ -28,7 +28,6 @@ export async function setup (ops = {}) {
     }
 
     const browser = await puppeteer.launch(puppeteerOps)
-    await browser.targets()
     const servers = []
 
     async function teardown () {
@@ -36,7 +35,7 @@ export async function setup (ops = {}) {
             return new Promise((resolve) => {
                 browser.on('disconnected', async () => {
                     await teardownInternal()
-                    resolve()
+                    resolve(undefined)
                 })
             })
         } else {
@@ -55,6 +54,7 @@ export async function setup (ops = {}) {
 
     function setupServer (port) {
         const server = http.createServer(function (req, res) {
+            if (!req.url) throw new Error('unreachable')
             const url = new URL(req.url, `http://${req.headers.host}`)
             const importUrl = new URL(import.meta.url)
             const dirname = importUrl.pathname.replace(/\/[^/]*$/, '')
